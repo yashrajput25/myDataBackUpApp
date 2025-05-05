@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -91,7 +92,7 @@ fun BackupScreen(onLogout: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Backup App") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     val context = LocalContext.current
                     IconButton(onClick = {
@@ -120,8 +121,20 @@ fun BackupScreen(onLogout: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(stringResource(R.string.select_file)) //uploaded_files
-                fileList.forEach { file ->
+
+                var searchQuery by remember { mutableStateOf("") }
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search files") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                )
+//uploaded_files
+                fileList.filter {
+                    it.fileName.contains(searchQuery, ignoreCase = true)
+                }.forEach { file ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
