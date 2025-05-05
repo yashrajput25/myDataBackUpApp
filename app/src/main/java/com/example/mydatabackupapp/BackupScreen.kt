@@ -1,6 +1,9 @@
 package com.example.mydatabackupapp
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
@@ -32,9 +36,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.ktx.auth
@@ -122,11 +128,30 @@ fun BackupScreen(onLogout: () -> Unit) {
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "• ${file.fileName}",
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .clickable { downloadFile(context, file) }
-                        )
+                                .clickable { previewFile(context, file) }
+                                .padding(vertical = 4.dp)
+                        ) {
+                            if (file.fileName.endsWith(".jpg", true) ||
+                                file.fileName.endsWith(".jpeg", true) ||
+                                file.fileName.endsWith(".png", true)
+                            ) {
+                                AsyncImage(
+                                    model = file.url,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .width(40.dp),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+
+                            Text(text = file.fileName)
+                        }
+
                         IconButton(onClick = {
                             deleteFile(context, file) { isLoading = it } // ✅ Pass loading state handler
                         }) {
@@ -149,6 +174,32 @@ fun BackupScreen(onLogout: () -> Unit) {
         ) {
             CircularProgressIndicator()
         }
+    }
+
+}
+
+fun previewFile(context: Context, file: UploadedFile) {
+    val uri = Uri.parse(file.url)
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, getMimeType(file.fileName))
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+    }
+
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        Toast.makeText(context, "No app to preview this file", Toast.LENGTH_SHORT).show()
+    }
+
+}
+
+fun getMimeType(fileName: String): String? {
+    return when {
+        fileName.endsWith(".pdf", true) -> "application/pdf"
+        fileName.endsWith(".doc", true) || fileName.endsWith(".docx", true) -> "application/msword"
+        fileName.endsWith(".jpg", true) || fileName.endsWith(".jpeg", true) -> "image/jpeg"
+        fileName.endsWith(".png", true) -> "image/png"
+        else -> "*/*"
     }
 
 }
