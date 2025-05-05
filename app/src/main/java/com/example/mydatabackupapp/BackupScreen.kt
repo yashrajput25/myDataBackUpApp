@@ -1,9 +1,6 @@
 package com.example.mydatabackupapp
 
-import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -18,10 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -53,14 +52,20 @@ import deleteFile
 fun BackupScreen(onLogout: () -> Unit) {
     val context = LocalContext.current
     var fileList by remember { mutableStateOf<List<UploadedFile>>(emptyList()) }
-
+    var showDialog by remember { mutableStateOf(false) }
+    var pickedFileUri by remember { mutableStateOf<Uri?>(null) }
+    var fileNameInput by remember { mutableStateOf("") }
+    var tagInput by remember { mutableStateOf("") }
 
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            uploadFileToFireBase(context, it)
+            pickedFileUri = it
+            fileNameInput = it.lastPathSegment ?: "uploaded_file"
+            tagInput = ""
+            showDialog = true
         }
     }
 
@@ -196,5 +201,51 @@ fun BackupScreen(onLogout: () -> Unit) {
             }
         }
     )
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Upload File") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = fileNameInput,
+                        onValueChange = { fileNameInput = it },
+                        label = { Text("File name") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = tagInput,
+                        onValueChange = { tagInput = it },
+                        label = { Text("Tags (optional)") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        pickedFileUri?.let { uri ->
+                            uploadFileToFireBase(
+                                context,
+                                uri,
+                                fileNameInput,
+                                tagInput
+                            )
+                        }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Upload")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
 
 }
