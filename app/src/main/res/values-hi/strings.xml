@@ -1,0 +1,10 @@
+<!-- res/values-hi/strings.xml -->
+<resources>
+    <string name="app_name">मेरा बैकअप ऐप</string>
+    <string name="select_file">फ़ाइल चुनें</string>
+    <string name="uploaded_files">अपलोड की गई फ़ाइलें:</string>
+    <string name="logout">लॉग आउट</string>
+    <string name="signin_google">Google से साइन इन करें</string>
+    <string name="uploading">अपलोड हो रहा है...</string>
+    <string name="file_deleted">फ़ाइल हटा दी गई</string>
+</resources>

@@ -1,0 +1,62 @@
+package com.example.mydatabackupapp
+
+import android.content.Context
+import android.net.Uri
+import android.widget.Toast
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import java.util.Date
+
+
+fun uploadFileToFireBase(context: Context, uri: Uri, setLoading: (Boolean) -> Unit) {
+    setLoading(true)
+
+    val storage = Firebase.storage
+    val storageRef = storage.reference
+    val userId = Firebase.auth.currentUser?.uid ?: "anonymous"
+    val fileName = "uploads/${userId}_${System.currentTimeMillis()}_${uri.lastPathSegment}"
+//    val fileName = "uploads/$userId/${System.currentTimeMillis()}_${uri.lastPathSegment}"
+
+    val fileRef = storageRef.child(fileName)
+
+    val inputStream = context.contentResolver.openInputStream(uri)
+    if (inputStream == null) {
+        setLoading(false)
+        Toast.makeText(context, "❌ Failed to read file", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    fileRef.putStream(inputStream)
+        .addOnSuccessListener {
+            fileRef.downloadUrl.addOnSuccessListener { url ->
+                val metadata = hashMapOf(
+                    "fileName" to uri.lastPathSegment,
+                    "uploadedAt" to Date(),
+                    "url" to url.toString(),
+                    "userId" to Firebase.auth.currentUser?.uid
+                )
+
+
+                Firebase.firestore.collection("uploadedFiles")
+                    .add(metadata)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "✅ Uploaded", Toast.LENGTH_SHORT).show()
+                        setLoading(false)
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(context, "❌ Failed to store metadata", Toast.LENGTH_SHORT).show()
+                        setLoading(false)
+                    }
+            }.addOnFailureListener {
+                Toast.makeText(context, "❌ Failed to get URL", Toast.LENGTH_SHORT).show()
+                setLoading(false)
+            }
+        }
+        .addOnFailureListener {
+            Toast.makeText(context, "❌ Upload failed", Toast.LENGTH_SHORT).show()
+            setLoading(false)
+        }
+}
+

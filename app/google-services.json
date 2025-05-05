@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "332709660240",
+    "project_id": "mydatabackupfirebase",
+    "storage_bucket": "mydatabackupfirebase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:332709660240:android:baf83e5718b3718a1db355",
+        "android_client_info": {
+          "package_name": "com.example.mydatabackupapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_iWDCnLPD5tKfjD1YMugN_f3iWmdpKqY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
