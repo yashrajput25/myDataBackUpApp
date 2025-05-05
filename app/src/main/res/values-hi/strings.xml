@@ -7,4 +7,7 @@
     <string name="signin_google">Google से साइन इन करें</string>
     <string name="uploading">अपलोड हो रहा है...</string>
     <string name="file_deleted">फ़ाइल हटा दी गई</string>
+    <string name="sort_by">क्रम:</string>
+    <string name="sort_name">नाम</string>
+    <string name="sort_date">तारीख</string>
 </resources>

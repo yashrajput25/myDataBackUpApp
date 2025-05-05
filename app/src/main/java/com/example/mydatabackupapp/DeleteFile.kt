@@ -5,8 +5,8 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
-fun deleteFile(context: Context, file: UploadedFile, setLoading: (Boolean) -> Unit) {
-    setLoading(true)
+fun deleteFile(context: Context, file: UploadedFile) {
+
 
     val storage = Firebase.storage
     val fileRef = storage.getReferenceFromUrl(file.url)
@@ -17,14 +17,13 @@ fun deleteFile(context: Context, file: UploadedFile, setLoading: (Boolean) -> Un
             .delete()
             .addOnSuccessListener {
                 Toast.makeText(context, "🗑️ File deleted!", Toast.LENGTH_SHORT).show()
-                setLoading(false)
             }
             .addOnFailureListener {
                 Toast.makeText(context, "❌ Failed to delete metadata", Toast.LENGTH_SHORT).show()
-                setLoading(false)
+
             }
     }.addOnFailureListener {
         Toast.makeText(context, "❌ Failed to delete file: ${it.message}", Toast.LENGTH_LONG).show()
-        setLoading(false)
+
     }
 }

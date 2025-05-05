@@ -8,11 +8,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -52,22 +51,21 @@ import deleteFile
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupScreen(onLogout: () -> Unit) {
-    var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var fileList by remember { mutableStateOf<List<UploadedFile>>(emptyList()) }
+
 
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            uploadFileToFireBase(
-                context, it
-            ){isLoading = it}
+            uploadFileToFireBase(context, it)
         }
     }
 
-    // Initial load
+
+
 // Live Firestore updates
     LaunchedEffect(Unit) {
         val currentUserId = Firebase.auth.currentUser?.uid
@@ -114,15 +112,16 @@ fun BackupScreen(onLogout: () -> Unit) {
 
         content = { padding ->
             Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-                Button(onClick = {
-                    launcher.launch("*/*")
-                }) {
+
+                Button(onClick = { launcher.launch("*/*") }) {
                     Text(stringResource(R.string.select_file))
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
 
+                Spacer(modifier = Modifier.height(16.dp))
                 var searchQuery by remember { mutableStateOf("") }
+                var sortByName by remember { mutableStateOf(false) }
+
                 TextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -131,8 +130,25 @@ fun BackupScreen(onLogout: () -> Unit) {
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 )
-//uploaded_files
-                fileList.filter {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(stringResource(R.string.sort_by))
+                    Button(onClick = { sortByName = !sortByName }) {
+                        Text(if (sortByName) stringResource(R.string.sort_name) else stringResource(R.string.sort_date))
+                    }
+                }
+
+                val sortedList = if (sortByName) {
+                    fileList.sortedBy { it.fileName.lowercase() }
+                } else {
+                    fileList // already sorted by uploadedAt from Firestore
+                }
+
+                sortedList.filter{
                     it.fileName.contains(searchQuery, ignoreCase = true)
                 }.forEach { file ->
                     Row(
@@ -146,6 +162,9 @@ fun BackupScreen(onLogout: () -> Unit) {
                             modifier = Modifier
                                 .clickable { previewFile(context, file) }
                                 .padding(vertical = 4.dp)
+                                .semantics {
+                                    contentDescription = "Preview file ${file.fileName}"
+                                }
                         ) {
                             if (file.fileName.endsWith(".jpg", true) ||
                                 file.fileName.endsWith(".jpeg", true) ||
@@ -153,7 +172,7 @@ fun BackupScreen(onLogout: () -> Unit) {
                             ) {
                                 AsyncImage(
                                     model = file.url,
-                                    contentDescription = null,
+                                    contentDescription = "Thumbnail of ${file.fileName}",
                                     modifier = Modifier
                                         .height(40.dp)
                                         .width(40.dp),
@@ -166,7 +185,7 @@ fun BackupScreen(onLogout: () -> Unit) {
                         }
 
                         IconButton(onClick = {
-                            deleteFile(context, file) { isLoading = it } // ✅ Pass loading state handler
+                            deleteFile(context, file)  // ✅ Pass loading state handler
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }
@@ -177,42 +196,5 @@ fun BackupScreen(onLogout: () -> Unit) {
             }
         }
     )
-
-    if (isLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-
-}
-
-fun previewFile(context: Context, file: UploadedFile) {
-    val uri = Uri.parse(file.url)
-    val intent = Intent(Intent.ACTION_VIEW).apply {
-        setDataAndType(uri, getMimeType(file.fileName))
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-    }
-
-    try {
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        Toast.makeText(context, "No app to preview this file", Toast.LENGTH_SHORT).show()
-    }
-
-}
-
-fun getMimeType(fileName: String): String? {
-    return when {
-        fileName.endsWith(".pdf", true) -> "application/pdf"
-        fileName.endsWith(".doc", true) || fileName.endsWith(".docx", true) -> "application/msword"
-        fileName.endsWith(".jpg", true) || fileName.endsWith(".jpeg", true) -> "image/jpeg"
-        fileName.endsWith(".png", true) -> "image/png"
-        else -> "*/*"
-    }
 
 }
