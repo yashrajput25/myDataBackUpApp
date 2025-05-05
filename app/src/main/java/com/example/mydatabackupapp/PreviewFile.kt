@@ -11,11 +11,24 @@ fun previewFile(context: Context, file: UploadedFile) {
     val uri = Uri.parse(file.url)
 
     when {
+//        file.fileName.endsWith(".pdf", true) -> {
+//            // Open PDF using Google Docs Viewer in WebView
+//            val intent = Intent(context, PdfPreviewActivity::class.java)
+//            intent.putExtra("pdfUrl", file.url)
+//            context.startActivity(intent)
+//        }
         file.fileName.endsWith(".pdf", true) -> {
-            // Open PDF using Google Docs Viewer in WebView
-            val intent = Intent(context, PdfPreviewActivity::class.java)
-            intent.putExtra("pdfUrl", file.url)
-            context.startActivity(intent)
+            // 👉 External viewer for PDF
+            val pdfIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/pdf")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
+
+            try {
+                context.startActivity(pdfIntent)
+            } catch (e: Exception) {
+                Toast.makeText(context, "No PDF viewer found", Toast.LENGTH_SHORT).show()
+            }
         }
 
         file.fileName.endsWith(".txt", true) -> {
