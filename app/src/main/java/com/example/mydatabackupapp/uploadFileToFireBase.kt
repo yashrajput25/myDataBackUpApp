@@ -2,6 +2,7 @@ package com.example.mydatabackupapp
 
 import android.content.Context
 import android.net.Uri
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -94,8 +95,12 @@ fun uploadFileToFireBase(
     uploadTask
         .addOnSuccessListener {
             fileRef.downloadUrl.addOnSuccessListener { url ->
+                val mimeType = context.contentResolver.getType(uri)
+                val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) ?: "pdf"
+                val cleanedInput = fileNameInput.substringBeforeLast(".")
+                val nameWithExtension = "$cleanedInput.$extension"
                 val metadata = hashMapOf(
-                    "fileName" to fileNameInput,
+                    "fileName" to nameWithExtension ,
                     "tags" to tagInput,
                     "uploadedAt" to Date(),
                     "url" to url.toString(),

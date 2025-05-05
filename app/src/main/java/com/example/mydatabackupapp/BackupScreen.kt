@@ -1,5 +1,7 @@
 package com.example.mydatabackupapp
 
+import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,7 +71,6 @@ fun BackupScreen(onLogout: () -> Unit) {
             showDialog = true
         }
     }
-
 
 
 // Live Firestore updates
@@ -189,10 +191,14 @@ fun BackupScreen(onLogout: () -> Unit) {
                             Text(text = file.fileName)
                         }
 
-                        IconButton(onClick = {
-                            deleteFile(context, file)  // ✅ Pass loading state handler
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        Row {
+                            IconButton(onClick = { shareFile(context, file) }) {
+                                Icon(Icons.Default.Share, contentDescription = "Share")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp)) // ← This adds space
+                            IconButton(onClick = { deleteFile(context, file) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete")
+                            }
                         }
 
                     }
@@ -248,4 +254,15 @@ fun BackupScreen(onLogout: () -> Unit) {
     }
 
 
+}
+
+fun shareFile(context: Context, file: UploadedFile) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, "Shared File: ${file.fileName}")
+        putExtra(Intent.EXTRA_TEXT, "Download this file: ${file.url}")
+    }
+
+    val chooser = Intent.createChooser(intent, "Share File via")
+    context.startActivity(chooser)
 }
