@@ -1,0 +1,15 @@
+
+<resources>
+    <string name="app_name">Mon Application de Sauvegarde</string>
+    <string name="default_web_client_id">332709660240-ljs55rp2f2at0i2lgu3klpglieh8jnma.apps.googleusercontent.com</string>
+    <string name="select_file">Téléverser un fichier</string>
+    <string name="uploaded_files">Fichiers téléversés :</string>
+    <string name="logout">Se déconnecter</string>
+    <string name="signin_google">Se connecter avec Google</string>
+    <string name="uploading">Téléversement en cours...</string>
+    <string name="file_deleted">Fichier supprimé</string>
+    <string name="sort_by">trier par :</string>
+    <string name="sort_name">Nom</string>
+    <string name="sort_date">Date de téléversement</string>
+    <string name="searchFiles">Rechercher des fichiers</string>
+</resources>

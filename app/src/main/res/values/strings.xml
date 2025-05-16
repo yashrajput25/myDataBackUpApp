@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">My Data BackUp App</string>
     <string name="default_web_client_id">332709660240-ljs55rp2f2at0i2lgu3klpglieh8jnma.apps.googleusercontent.com</string>
-    <string name="select_file">Select File to Backup</string>
+    <string name="select_file">Upload New File</string>
     <string name="uploaded_files">Uploaded Files:</string>
     <string name="logout">Logout</string>
     <string name="signin_google">Sign in with Google</string>
@@ -9,5 +9,6 @@
     <string name="file_deleted">File deleted</string>
     <string name="sort_by">sort by:</string>
     <string name="sort_name">Name</string>
-    <string name="sort_date">Date</string>
+    <string name="sort_date">Upload Date</string>
+    <string name ="searchFiles">Search Files</string>
 </resources>

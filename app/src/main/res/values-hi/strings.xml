@@ -10,4 +10,5 @@
     <string name="sort_by">क्रम:</string>
     <string name="sort_name">नाम</string>
     <string name="sort_date">तारीख</string>
+    <string name ="searchFiles">फ़ाइलें खोजें</string>
 </resources>
